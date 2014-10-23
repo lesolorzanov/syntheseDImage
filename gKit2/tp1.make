@@ -23,12 +23,12 @@ ifeq ($(config),debug)
   OBJDIR     = obj/debug/tp1
   TARGETDIR  = .
   TARGET     = $(TARGETDIR)/tp1
-  DEFINES   += -DGK_OPENGL4 -DVERBOSE -DDEBUG
-  INCLUDES  += -I. -IgKit -Ilocal/linux/include
+  DEFINES   += -DGK_OPENGL3 -DVERBOSE -DDEBUG
+  INCLUDES  += -I. -IgKit -ISDL/include -Iglew/include
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
-  CFLAGS    += $(CPPFLAGS) $(ARCH) -g -W -Wall -Wno-unused-parameter -pipe
+  CFLAGS    += $(CPPFLAGS) $(ARCH) -g -mtune=native -W -Wall -Wno-unused-parameter -pipe -mtune=native -Og
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L/home/zloy/Documents/FRANCE/syntheseDImage/gKit2/local/linux/lib -Wl,-rpath,/home/zloy/Documents/FRANCE/syntheseDImage/gKit2/local/linux/lib
+  LDFLAGS   += -L/home/zloy/Documents/FRANCE/syntheseDImage/gKit2/glew/lib/ -Wl,-rpath,/home/zloy/Documents/FRANCE/syntheseDImage/gKit2/glew/lib/ -L/home/zloy/Documents/FRANCE/syntheseDImage/gKit2/SDL/lib/ -Wl,-rpath,/home/zloy/Documents/FRANCE/syntheseDImage/gKit2/SDL/lib/
   LIBS      += -lGLEW -lSDL2 -lSDL2_image -lSDL2_ttf -lGL
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
   LDDEPS    += 
@@ -45,34 +45,12 @@ ifeq ($(config),release)
   OBJDIR     = obj/release/tp1
   TARGETDIR  = .
   TARGET     = $(TARGETDIR)/tp1
-  DEFINES   += -DGK_OPENGL4 -DVERBOSE
-  INCLUDES  += -I. -IgKit -Ilocal/linux/include
+  DEFINES   += -DGK_OPENGL3 -DVERBOSE
+  INCLUDES  += -I. -IgKit -ISDL/include -Iglew/include
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
-  CFLAGS    += $(CPPFLAGS) $(ARCH) -O3 -W -Wall -Wno-unused-parameter -pipe -mtune=native
+  CFLAGS    += $(CPPFLAGS) $(ARCH) -O3 -mtune=native -W -Wall -Wno-unused-parameter -pipe
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -s -L/home/zloy/Documents/FRANCE/syntheseDImage/gKit2/local/linux/lib -Wl,-rpath,/home/zloy/Documents/FRANCE/syntheseDImage/gKit2/local/linux/lib
-  LIBS      += -lGLEW -lSDL2 -lSDL2_image -lSDL2_ttf -lGL
-  RESFLAGS  += $(DEFINES) $(INCLUDES) 
-  LDDEPS    += 
-  LINKCMD    = $(CXX) -o $(TARGET) $(OBJECTS) $(LDFLAGS) $(RESOURCES) $(ARCH) $(LIBS)
-  define PREBUILDCMDS
-  endef
-  define PRELINKCMDS
-  endef
-  define POSTBUILDCMDS
-  endef
-endif
-
-ifeq ($(config),gprof)
-  OBJDIR     = obj/gprof/tp1
-  TARGETDIR  = .
-  TARGET     = $(TARGETDIR)/tp1
-  DEFINES   += -DGK_OPENGL4 -DVERBOSE
-  INCLUDES  += -I. -IgKit -Ilocal/linux/include
-  CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
-  CFLAGS    += $(CPPFLAGS) $(ARCH) -W -Wall -Wno-unused-parameter -pipe
-  CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -s -L/home/zloy/Documents/FRANCE/syntheseDImage/gKit2/local/linux/lib -Wl,-rpath,/home/zloy/Documents/FRANCE/syntheseDImage/gKit2/local/linux/lib
+  LDFLAGS   += -s -L/home/zloy/Documents/FRANCE/syntheseDImage/gKit2/glew/lib/ -Wl,-rpath,/home/zloy/Documents/FRANCE/syntheseDImage/gKit2/glew/lib/ -L/home/zloy/Documents/FRANCE/syntheseDImage/gKit2/SDL/lib/ -Wl,-rpath,/home/zloy/Documents/FRANCE/syntheseDImage/gKit2/SDL/lib/
   LIBS      += -lGLEW -lSDL2 -lSDL2_image -lSDL2_ttf -lGL
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
   LDDEPS    += 
@@ -90,14 +68,23 @@ OBJECTS := \
 	$(OBJDIR)/ImageIO.o \
 	$(OBJDIR)/App.o \
 	$(OBJDIR)/rgbe.o \
+	$(OBJDIR)/ImageArray.o \
+	$(OBJDIR)/QuadMesh.o \
+	$(OBJDIR)/MeshData.o \
 	$(OBJDIR)/Logger.o \
 	$(OBJDIR)/ProgramManager.o \
 	$(OBJDIR)/MeshIO.o \
 	$(OBJDIR)/Geometry.o \
 	$(OBJDIR)/ImageManager.o \
+	$(OBJDIR)/Image.o \
+	$(OBJDIR)/ProgramTweaks.o \
+	$(OBJDIR)/OrbiterIO.o \
 	$(OBJDIR)/GLTexture.o \
+	$(OBJDIR)/GLQuery.o \
 	$(OBJDIR)/GLBasicMesh.o \
+	$(OBJDIR)/GLProgramUniforms.o \
 	$(OBJDIR)/GLCompiler.o \
+	$(OBJDIR)/GLBasicMaterial.o \
 	$(OBJDIR)/GLProgram.o \
 	$(OBJDIR)/ProgramName.o \
 	$(OBJDIR)/nvContext.o \
@@ -179,6 +166,15 @@ $(OBJDIR)/App.o: gKit/App.cpp
 $(OBJDIR)/rgbe.o: gKit/rgbe.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/ImageArray.o: gKit/ImageArray.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/QuadMesh.o: gKit/QuadMesh.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/MeshData.o: gKit/MeshData.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/Logger.o: gKit/Logger.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
@@ -194,13 +190,31 @@ $(OBJDIR)/Geometry.o: gKit/Geometry.cpp
 $(OBJDIR)/ImageManager.o: gKit/ImageManager.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/Image.o: gKit/Image.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/ProgramTweaks.o: gKit/ProgramTweaks.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/OrbiterIO.o: gKit/OrbiterIO.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/GLTexture.o: gKit/GL/GLTexture.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/GLQuery.o: gKit/GL/GLQuery.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/GLBasicMesh.o: gKit/GL/GLBasicMesh.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/GLProgramUniforms.o: gKit/GL/GLProgramUniforms.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/GLCompiler.o: gKit/GL/GLCompiler.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/GLBasicMaterial.o: gKit/GL/GLBasicMaterial.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/GLProgram.o: gKit/GL/GLProgram.cpp
