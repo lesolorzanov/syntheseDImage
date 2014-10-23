@@ -13,9 +13,10 @@ using namespace std;
 int main(int argc, char* argv[])
 {
 	float x0,y0,x1,y1,x2,y2,z0,z1,z2,z;
-    float r,cx,cy,cz,angle;
-	z0=0.0f;z1=0.0f;z2=0.0f;z=0;
-	int width=512,height=512;
+    float r,cx,cy,cz;
+    z0=0.0f;z1=0.0f;z2=0.0f;z=0;
+    int width=512,height=512;
+    float angle=45;
     float znear=100.0;
     float zfar=500.0;
     //montrer triangle, sphere ou sphere perturbe
@@ -23,7 +24,7 @@ int main(int argc, char* argv[])
     //string text = argv[1];
     if (argc<=1)
     {
-        cout<<"Vous devez choisir un forme a afficher";
+        cout<<"Vous devez choisir un forme a afficher\n";
         return 0;
     }
     
@@ -61,11 +62,10 @@ int main(int argc, char* argv[])
             zfar = strtof(argv[8], NULL); 
             cout<<"Radius "<<r<<"\n";
             cout<<"centre sphere (repere propre)"<<cx<<","<<cy<<","<<cz<<"\n";
-            cout<<"Angle znear far "<<angle<<" ("<<(angle*M_PI/180.0)<<l.y<<","<<l.z<<"\n";
-            cout<<"OmC "<<OmC.x<<","<<OmC.y<<","<<OmC.z<<"\n";
+            cout<<"Angle znear far "<<angle<<" "<<znear<<" "<<zfar<<"\n";
             cout<<"+-------------------------------------------------------------------+\n";
         }else if(argc == 2){
-            r  = 50.0f;
+            r  = 0.5f;
             cx = 0.0f;
             cy = 0.0f;
             cz = -256.0f;
@@ -141,9 +141,10 @@ int main(int argc, char* argv[])
         //rayons et comme ca j'aurai l'interesection des rayons avec le sphere. Apres je dois remetre
         //ces intersections de retour au repere de l'image en multipliant par la matrice inverse.
 
-        gk::Transform viewport = gk::Viewport ( width,  height);
         gk::Transform perspective = gk::Perspective (angle*M_PI/180.0, 1, znear, zfar);
-        gk::Transform T = viewport*perspective;
+        gk::Transform viewport = gk::Viewport ( width,  height);
+        //gk::Transform translate = gk::Translate ( gk::Point(cx,cy,cz));
+        gk::Transform T = viewport*perspective;//*translate;
         gk::Transform TInv = T.inverse();
 
         cout << "sphere\n";

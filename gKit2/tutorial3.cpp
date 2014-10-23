@@ -50,6 +50,16 @@ class TP : public gk::App
     int m_indices_size;
     
     gk::GLCounter *m_time;
+
+    float width,height;
+    float angle,znear,zfar;
+    gk::Transform W ;
+    gk::Transform P;
+    gk::Transform V;
+    gk::Transform T;
+    gk::Transform Rx;
+    gk::Transform Ry;
+    gk::Transform S; //translate
     
 public:
     // creation du contexte openGL et d'une fenetre
@@ -62,9 +72,10 @@ public:
         settings.setGLVersion(3,3);     // version 3.3
         settings.setGLCoreProfile();      // core profile
         settings.setGLDebugContext();     // version debug pour obtenir les messages d'erreur en cas de probleme
-        
+        width=512;
+        height=512;
         // cree le contexte et une fenetre
-        if(createWindow(512, 512, settings) < 0)
+        if(createWindow(width,height, settings) < 0)
             closeWindow();
         
         m_widgets.init();
@@ -77,15 +88,21 @@ public:
     {
         // compilation simplifiee d'un shader program
         gk::programPath("shaders");
-        m_program= gk::createProgram("core.glsl");
+        m_program= gk::createProgram("dFnormal.glsl");
         if(m_program == gk::GLProgram::null())
             return -1;
         
         // charge un mesh
-        gk::Mesh *mesh= gk::MeshIO::readOBJ("bbox.obj");
+        gk::Mesh *mesh= gk::MeshIO::readOBJ("bigguy.obj");
         if(mesh == NULL)
             return -1;
         
+        angle=45,znear=1,zfar=512;
+        W = gk::Perspective (angle, 1, 1, 512);
+        //P = gk::Viewport (width,height);
+        V = gk::LookAt(gk::Point(0,0,50),gk::Point(0,0,0),gk::Vector(0,1,0));
+        T=W*V;
+
         // cree le vertex array objet, description des attributs / associations aux variables du shader
         m_vao= gk::createVertexArray();
         
@@ -164,7 +181,27 @@ public:
             // enregistre l'image opengl
             gk::writeFramebuffer("screenshot.png");
         }
-        
+
+
+
+        if(key(SDLK_LEFT)){
+          Ry=gk::RotateY(-5);
+          T=T*Ry;
+        }
+        if(key(SDLK_RIGHT)){
+           Ry=gk::RotateY(5);
+           T=T*Ry;
+        }
+        if(key(SDLK_UP)){
+           Rx=gk::RotateX(5);
+           T=T*Rx;
+        }
+        if(key(SDLK_DOWN)){
+           Rx=gk::RotateX(-5);
+           T=T*Rx;
+        }
+
+
         //
         glViewport(0, 0, windowWidth(), windowHeight());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -176,8 +213,8 @@ public:
         glUseProgram(m_program->name);
         
         // parametrer le shader
-        m_program->uniform("mvpMatrix")= gk::Transform().matrix();      // transformation model view projection
-        m_program->uniform("color")= gk::VecColor(1, 1, 0);     // couleur des fragments
+        m_program->uniform("mvpMatrix")= T.matrix();      // transformation model view projection
+        m_program->uniform("diffuse_color")= gk::VecColor(1, 1, 0);     // couleur des fragments
         
         // selectionner un ensemble de buffers et d'attributs de sommets
         glBindVertexArray(m_vao->name);
