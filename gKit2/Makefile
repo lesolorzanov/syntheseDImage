@@ -6,11 +6,19 @@ ifndef config
 endif
 export config
 
-PROJECTS := tutorial1 tutorial2 tutorial3 image_viewer mesh_viewer shader_kit compute_kit filter_tutorial1 filter_compute_tutorial1 tp1 tp1sphere_reyes tp1shader batch_perf tessellation_tuto tessellation_sphere compute_tutorial1 compute_tutorial2 compute_tutorial3 mini_gl3core
+PROJECTS := tuto_forward tuto_deferred tutorial1 tutorial2 tutorial3 image_viewer mesh_viewer shader_kit compute_kit filter_tutorial1 filter_compute_tutorial1 tp1 tp1sphere_reyes tp1shader batch_perf tessellation_tuto tessellation_sphere compute_tutorial1 compute_tutorial2 compute_tutorial3 mini_gl3core
 
 .PHONY: all clean help $(PROJECTS)
 
 all: $(PROJECTS)
+
+tuto_forward: 
+	@echo "==== Building tuto_forward ($(config)) ===="
+	@${MAKE} --no-print-directory -C . -f tuto_forward.make
+
+tuto_deferred: 
+	@echo "==== Building tuto_deferred ($(config)) ===="
+	@${MAKE} --no-print-directory -C . -f tuto_deferred.make
 
 tutorial1: 
 	@echo "==== Building tutorial1 ($(config)) ===="
@@ -89,6 +97,8 @@ mini_gl3core:
 	@${MAKE} --no-print-directory -C . -f mini_gl3core.make
 
 clean:
+	@${MAKE} --no-print-directory -C . -f tuto_forward.make clean
+	@${MAKE} --no-print-directory -C . -f tuto_deferred.make clean
 	@${MAKE} --no-print-directory -C . -f tutorial1.make clean
 	@${MAKE} --no-print-directory -C . -f tutorial2.make clean
 	@${MAKE} --no-print-directory -C . -f tutorial3.make clean
@@ -119,6 +129,8 @@ help:
 	@echo "TARGETS:"
 	@echo "   all (default)"
 	@echo "   clean"
+	@echo "   tuto_forward"
+	@echo "   tuto_deferred"
 	@echo "   tutorial1"
 	@echo "   tutorial2"
 	@echo "   tutorial3"

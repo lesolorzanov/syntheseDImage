@@ -11,6 +11,8 @@
 #include "GL/GLVertexArray.h"
 #include "ProgramManager.h"
 
+#include <vector>
+
 //! classe utilitaire : permet de construire une chaine de caracteres formatee. cf sprintf.
 struct Format
 {
@@ -36,6 +38,58 @@ struct Format
     }
 };
 
+struct TPObjet{
+
+    gk::GLProgram *m_program;
+    gk::GLVertexArray *m_vao;
+    gk::GLBuffer *m_vertex_buffer;
+    gk::GLBuffer *m_index_buffer;
+    int m_indices_size;
+    gk::Transform T;
+    gk::Transform MV;
+    gk::Transform NorM;
+    gk::Mesh *mesh;
+
+    void init(gk::Mesh *mesh,gk::GLProgram *m_program){
+        m_vao= gk::createVertexArray();
+        // cree le buffer de position
+        m_vertex_buffer= gk::createBuffer(GL_ARRAY_BUFFER, mesh->positions);
+        // associe le contenu du buffer a la variable 'position' du shader
+        glVertexAttribPointer(m_program->attribute("MCVertex"), 4, GL_FLOAT, GL_FALSE, 0, 0);
+        // active l'utilisation du buffer
+        glEnableVertexAttribArray(m_program->attribute("MCVertex"));
+        // cree le buffer d'indices et l'associe au vertex array
+        m_index_buffer= gk::createBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->indices);
+        // conserve le nombre d'indices (necessaire pour utiliser glDrawElements)
+        m_indices_size= mesh->indices.size();
+    }
+
+    void aurepere(gk::Transform X){
+        T=X;
+    }
+
+    void draw(){
+        // dessiner quelquechose
+        glUseProgram(m_program->name);
+
+        // parametrer le shader
+        m_program->uniform("MVPMatrix")= T.matrix();      // transformation model view projection
+        m_program->uniform("MVMatrix")= MV.matrix(); 
+        m_program->uniform("NormalMatrix")= NorM.matrix();  
+        //m_program->uniform("diffuse_color")= gk::VecColor(1, 1, 0);     // couleur des fragments
+
+        // selectionner un ensemble de buffers et d'attributs de sommets
+        glBindVertexArray(m_vao->name);
+        // dessiner un maillage indexe
+        glDrawElements(GL_TRIANGLES, m_indices_size, GL_UNSIGNED_INT, 0);
+
+    }
+
+};
+
+
+
+
 
 //! squelette d'application gKit.
 class TP : public gk::App
@@ -43,6 +97,7 @@ class TP : public gk::App
     nv::SdlContext m_widgets;
     
     gk::GLProgram *m_program;
+
     gk::GLVertexArray *m_vao;
     
     gk::GLBuffer *m_vertex_buffer;
@@ -61,11 +116,11 @@ class TP : public gk::App
     gk::Transform Ry;
     gk::Transform S; //translate
     
+    std::vector<TPObjet> objects;
+
 public:
     // creation du contexte openGL et d'une fenetre
-    TP( )
-        :
-        gk::App()
+    TP( ):gk::App()
     {
         // specifie le type de contexte openGL a creer :
         gk::AppSettings settings;
@@ -88,7 +143,7 @@ public:
     {
         // compilation simplifiee d'un shader program
         gk::programPath("shaders");
-        m_program= gk::createProgram("dFnormal.glsl");
+        m_program= gk::createProgram("leslie.glsl");
         if(m_program == gk::GLProgram::null())
             return -1;
         
@@ -104,8 +159,16 @@ public:
         T=W*V;
 
         // cree le vertex array objet, description des attributs / associations aux variables du shader
-        m_vao= gk::createVertexArray();
-        
+
+        TPObjet bigguy;
+        objects.push_back(bigguy);
+
+        for(std::vector<TPObjet>::size_type i = 0; i != objects.size(); i++) {
+            objects[i].init(mesh,m_program);
+        }
+
+        //////////// pour chaque objet
+        /*m_vao= gk::createVertexArray();
         // cree le buffer de position
         m_vertex_buffer= gk::createBuffer(GL_ARRAY_BUFFER, mesh->positions);
         // associe le contenu du buffer a la variable 'position' du shader
@@ -116,7 +179,8 @@ public:
         // cree le buffer d'indices et l'associe au vertex array
         m_index_buffer= gk::createBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->indices);
         // conserve le nombre d'indices (necessaire pour utiliser glDrawElements)
-        m_indices_size= mesh->indices.size();
+        m_indices_size= mesh->indices.size();*/
+        //////////////
         
         // mesh n'est plus necessaire, les donnees sont transferees dans les buffers sur la carte graphique
         delete mesh;
@@ -162,27 +226,24 @@ public:
         m_widgets.processKeyboardEvent(event);
     }
     
-    int draw( )
-    {
+    void keys(){
         if(key(SDLK_ESCAPE))
             // fermer l'application si l'utilisateur appuie sur ESCAPE
             closeWindow();
-        
+
         if(key('r'))
         {
             key('r')= 0;
             // recharge et recompile les shaders
             gk::reloadPrograms();
         }
-        
+
         if(key('c'))
         {
             key('c')= 0;
             // enregistre l'image opengl
             gk::writeFramebuffer("screenshot.png");
         }
-
-
 
         if(key(SDLK_LEFT)){
           Ry=gk::RotateY(-5);
@@ -200,8 +261,12 @@ public:
            Rx=gk::RotateX(-5);
            T=T*Rx;
         }
+    }
 
 
+    int draw( )
+    {
+        keys();
         //
         glViewport(0, 0, windowWidth(), windowHeight());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -210,7 +275,7 @@ public:
         m_time->start();
         
         // dessiner quelquechose
-        glUseProgram(m_program->name);
+        /*glUseProgram(m_program->name);
         
         // parametrer le shader
         m_program->uniform("mvpMatrix")= T.matrix();      // transformation model view projection
@@ -219,7 +284,7 @@ public:
         // selectionner un ensemble de buffers et d'attributs de sommets
         glBindVertexArray(m_vao->name);
         // dessiner un maillage indexe
-        glDrawElements(GL_TRIANGLES, m_indices_size, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, m_indices_size, GL_UNSIGNED_INT, 0);*/
         
         // nettoyage
         glUseProgram(0);

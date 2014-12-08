@@ -141,7 +141,7 @@ int main(int argc, char* argv[])
         //rayons et comme ca j'aurai l'interesection des rayons avec le sphere. Apres je dois remetre
         //ces intersections de retour au repere de l'image en multipliant par la matrice inverse.
 
-        gk::Transform perspective = gk::Perspective (angle*M_PI/180.0, 1, znear, zfar);
+        gk::Transform perspective = gk::Perspective (angle, 1, znear, zfar);
         gk::Transform viewport = gk::Viewport ( width,  height);
         //gk::Transform translate = gk::Translate ( gk::Point(cx,cy,cz));
         gk::Transform T = viewport*perspective;//*translate;
